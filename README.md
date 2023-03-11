@@ -1,6 +1,6 @@
 # CaCao
 This is the official repository for the paper "Visually-Prompted Language Model for Fine-Grained Scene Graph Generation in an Open World"
-![framework](framework.png)
+![framework](architecture.png)
 # Complete code for CaCao and boosted SGG
 Here we provide sample code for CaCao boosting SGG dataset in standard setting and open-world setting.
 
@@ -21,7 +21,7 @@ Here we provide sample code for CaCao boosting SGG dataset in standard setting a
 	bash train.sh TRANSGLOVE_novel
 	# Epic (+CaCao)
 	bash train.sh PROMPT_novel
-Complete code and data for the scene graph generation with CaCao and Epic will be released with a final version of the paper.
+Complete code and extra benchmark dataset for the scene graph generation with CaCao and Epic will be released with a final version of the paper.
 # Quantitative Analysis
 ![image](https://user-images.githubusercontent.com/48062034/204216822-2010dd00-f0d4-4d5a-9a94-437589c4f8ea.png)
 # Qualitative Analysis
