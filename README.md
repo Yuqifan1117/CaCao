@@ -5,10 +5,18 @@ This is the official repository for the paper "Visually-Prompted Language Model 
 Here we provide sample code for CaCao boosting SGG dataset in standard setting and open-world setting.
 
 ## Running Script Tutorial
-	1. python adaptive_cluster.py # obtain initialized clusters for CaCao
-	2. python cross_modal_tuning.py # obtain cross-modal prompt tuning models for better predicate boosting
-	3. python fine_grained_mapping.py # establish the mapping from open-world boosted data to target predicates for enhancement
-	4. python fine_grained_predicate_boosting.py # enhance the existing SGG dataset with our CaCao model in <pre_trained_visually_prompted_model>
+```bash
+python adaptive_cluster.py # obtain initialized clusters for CaCao
+```
+```bash
+python cross_modal_tuning.py # obtain cross-modal prompt tuning models for better predicate boosting
+```
+```bash
+python fine_grained_mapping.py # establish the mapping from open-world boosted data to target predicates for enhancement
+```
+```bash
+python fine_grained_predicate_boosting.py # enhance the existing SGG dataset with our CaCao model in <pre_trained_visually_prompted_model>
+```
 ## Enhancement Retrain for SGG
 	bash train_motif_expand.sh # expand SGG with motif models
 	bash train_vctree_expand.sh # expand SGG with vctree models
