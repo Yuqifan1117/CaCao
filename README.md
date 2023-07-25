@@ -28,9 +28,9 @@ python fine_grained_predicate_boosting.py # enhance the existing SGG dataset wit
 	bash train.sh PROMPT_novel
 Complete code and extra benchmark dataset for the scene graph generation with CaCao and Epic will be released with a final version of the paper.
 # Quantitative Analysis
-![image](https://user-images.githubusercontent.com/48062034/204216822-2010dd00-f0d4-4d5a-9a94-437589c4f8ea.png)
+![image](https://github.com/Yuqifan1117/CaCao/assets/48062034/edd8b9bf-9d00-4f0f-894d-fce3b631fea5)
 # Qualitative Analysis
-![visualization](figures/visualization.png)
+![visualization](figures/visualization.pdf)
 ![visualization](figures/open-world.png)
 ## Predicate Boosting
 ![image](https://user-images.githubusercontent.com/48062034/204218380-3e2eedea-0adb-4acf-b3b6-c574c9e2dbfd.png)
