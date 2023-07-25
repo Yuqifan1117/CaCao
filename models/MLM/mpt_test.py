@@ -17,8 +17,6 @@ class VisualBertPromptModel(nn.Module):
         self.prompt_num = prefix_prompt_num
         self.prefix_prompt = prompt_candidates[:prefix_prompt_num]
         self.word_table = predicates_words
-        # prompt_ids means only tuning the position of prompt tokens
-        # in visual-text prompt, text should pay attention in visual, thus need to train all of embedding layer
         prompt_ids = []
         for i in range(prefix_prompt_num):
             prompt_ids.append(i+1)
@@ -27,8 +25,14 @@ class VisualBertPromptModel(nn.Module):
         self.transformerlayer = TransformerLayer(hidden_size=hidden_size, num_attention_heads=12, attention_probs_dropout_prob=0.1, intermediate_size=3072, hidden_dropout_prob=0.1, layer_norm_eps=1e-8)
         self.model = BertForMaskedLM.from_pretrained('/home/qifan/FG-SGG_from_LM/bert-base-uncased', prompt_ids)
         self.tokenizer = BertTokenizerFast.from_pretrained('/home/qifan/FG-SGG_from_LM/bert-base-uncased')
-        self.prompt4re = BertForPromptFinetuning(self.model.config, relation_type_count, self.model.cls, self.word_table)
-    def forward(self, batch_text, batch_img, weight=None, device='cuda:1', is_label=True):
+        self.embedding_input = self.model.get_input_embeddings()
+        self.predicate_embeddings = []
+        with torch.no_grad():
+            for word in self.word_table:
+                predicate_embedding = torch.mean(self.embedding_input(self.tokenizer.encode(word, return_tensors="pt", add_special_tokens = False)), dim=1) # target predicate
+                self.predicate_embeddings.append(predicate_embedding)
+        self.prompt4re = BertForPromptFinetuning(self.model.config, relation_type_count, self.model.cls, self.word_table, self.predicate_embeddings)
+    def forward(self, batch_text, batch_img, weight=None, theta=1.0, device='cuda', is_label=True):
         text_input = torch.Tensor([]).to(device)
         label = []
         attention_mask = torch.Tensor([])
@@ -54,10 +58,8 @@ class VisualBertPromptModel(nn.Module):
             contexts.append(' '.join([batch_text[i][0], batch_text[i][1], batch_text[i][2]]))
             label_id = [self.word_table.index(batch_text[i][1])] if is_label else [-1]
             # text_prompt = 'The relationship is '+text_prompt
-            input = self.tokenizer.encode(text_prompt, return_tensors="pt", add_special_tokens = False)
-            # ['CLS']
-            token = [self.tokenizer.convert_tokens_to_ids(self.tokenizer.special_tokens_map['cls_token'])]
-            # prompt ids for soft_prompt
+            input = self.tokenizer.encode(text_prompt, return_tensors="pt", add_special_tokens = True)
+            token = []
             prompt_str = []
             for prompt in self.prefix_prompt:
                 prompt_str.append(prompt)
@@ -65,12 +67,9 @@ class VisualBertPromptModel(nn.Module):
                 token_id = self.tokenizer.convert_tokens_to_ids(prompt)
                 token.append(token_id)
             token = torch.cat((torch.Tensor(token), input[0]), dim=0)
-            # ['SEP']
-            token = torch.cat((token, torch.Tensor([self.tokenizer.convert_tokens_to_ids(self.tokenizer.special_tokens_map['sep_token'])]))).long()
             token = torch.unsqueeze(token, dim=0)
             # The image is [CLS][Visual-prompt vectors] with [SUB] and [OBJ]. The relationship is [SUB][MASK][OBJ]
             # [CLS][Visual-prompt vectors] [CLS] The relationship is [SUB][MASK][OBJ] [SEP]
-            
             # attention mask
             token = add_zero(token, token_length)
             mask = torch.ones_like(token) - make_mask(token)
@@ -90,15 +89,13 @@ class VisualBertPromptModel(nn.Module):
         label = torch.Tensor(label).long().to(device)
         attention_mask = attention_mask.to(device)
         self.model = self.model.to(device)
-        # mask_index = torch.where(input["input_ids"][0] == tokenizer.mask_token_id)
-        # position_ids = torch.arange(attention_mask.shape[1]).expand((1, -1)).to(device)
         output = self.model(input_ids=text_input, labels=label, visual_prompts=visual_prompts, attention_mask=attention_mask)
         mask_pos = torch.Tensor(mask_pos).long()
         self.prompt4re = self.prompt4re.to(device)
         weight = torch.Tensor(weight).to(device) if weight is not None else None
         if not is_label:
             label = None
-        final = self.prompt4re(output[1], mask_pos=mask_pos, labels=label, contexts=contexts, weight=weight, device=device)
+        final = self.prompt4re(output[1], mask_pos=mask_pos, labels=label, weight=weight, theta=theta, device=device)
         # logits = output.logits
         return final, label if label is not None else final
     def mapping_target(self, predicted_rel, target_words, prep_words, device='cuda:0'):
@@ -141,26 +138,7 @@ class VisualBertPromptModel(nn.Module):
         for i in top_score_index:
             result_words.append(all_keywords_w2v_list[i][0])
         return result_words
-        # return all_keywords_w2v_list[max_score_index][0]
             
-
-def construct_input(subject, predicate, object, tokenizer, prefix_prompt):
-    text_prompt = subject + predicate + object
-    input = tokenizer.encode(text_prompt, return_tensors="pt", add_special_tokens = False)
-    # ['CLS']
-    token = [tokenizer.convert_tokens_to_ids(tokenizer.special_tokens_map['cls_token'])]
-    # prompt ids
-    prompt_str = []
-    for prompt in prefix_prompt:
-        prompt_str.append(prompt)
-    for prompt in prompt_str:
-        token_id = tokenizer.convert_tokens_to_ids(prompt)
-        token.append(token_id)
-    token = torch.cat((torch.Tensor(token), input[0]), dim=0)
-    # ['SEP']
-    token = torch.cat((token, torch.Tensor([tokenizer.convert_tokens_to_ids(tokenizer.special_tokens_map['sep_token'])]))).long()
-    token = torch.unsqueeze(token, dim=0)     
-    return token   
 def add_zero(token, token_length):
     zero = torch.Tensor([[0] * (token_length-token.shape[1])])
     return torch.cat((token, zero), dim=1)

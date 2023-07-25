@@ -26,30 +26,6 @@ def multi_liaison (input_sent, output=['tagging','parse_tree','type_dep','spo','
     objects = get_object(parse_tree)
     # Generate the relations between subjects and objects 
     relation = get_relationship(parse_tree, subjects, objects)
-    
-    # if 'tagging' in output:
-    #     print('---TAGGING---')
-    #     print(pos_sent)
-    #     print()
-    # if 'parse_tree' in output:
-    #     print('---PARSE TREE---')
-    #     parse_tree.pretty_print()
-    #     print()
-    # if 'type_dep' in output:
-    #     print('---TYPED DEPENDENCIES---')
-    #     for x in dep_type.triples(): print(x)     
-    # if 'spo' in output:
-    #     print('---MULTI-LIAISON OUTPUT---')
-    #     print('Subject: ',len(subjects))
-    #     for x in subjects: print(' '.join(x))
-    #     print('Predicate: ',len(predicate))
-    #     for x in predicate: print(' '.join(x[0]))
-    #     print('Object: ',len(objects))
-    #     for x in objects: print(' '.join(x))
-    #     print()
-    # if 'relation' in output:
-    #     print('---RELATIONSHIP---')
-    #     for x in relation: print(x)
     return relation
 
 def get_subject (parse_tree):
@@ -171,8 +147,10 @@ def get_relationship(parse_tree, subjects, objects):
     return relation
 
 if __name__ == '__main__':
+    # instruction for start
     # java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -annotators "tokenize,ssplit,pos,lemma,parse,sentiment" -port 20001 -timeout 30000
-    # test for relationship extraction
+
+
     # sentense1 = 'A clock that blends in with the wall hangs in a bathroom. '
     # sentense2 = 'A couple at the beach walking with their surf boards.'
     # sentense3 = "A yellow and black bird standing on and hanging with a bike rack."

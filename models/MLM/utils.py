@@ -7,13 +7,11 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import numpy as np
-np.random.seed(20)
 coarse = ['above', 'across', 'against', 'along', 'and', 'at', 'behind', 'between', 'for', 'from', 'has', 'in', 'in front of', 'near', 'of', 'on', 'over', 'to', 'under', 'with']
 fine = ['attached to', 'belonging to', 'carrying', 'covered in', 'covering', 'eating', 'flying in', 'growing on', 'hanging from', 'holding', 'laying on', 'looking at', 'lying on', 'made of', 'mounted on', 'on back of', 'painted on', 'parked on', 'part of', 'playing', 'riding', 'says', 'sitting on', 'standing on', 'using', 'walking in', 'walking on', 'watching', 'wearing', 'wears']
 gqa_info = json.load(open('/home/qifan/datasets/GQA/GQA_200_ID_Info.json'))
 gqa_predicate_set = gqa_info['ind_to_predicates'][1:]
-# in limited SGG, predicates are fine defined to 20 categories
-limited_20 = ['carrying','covered in','covering','eating','flying in','growing on','hanging from','lying on','mounted on','painted on','parked on','playing','riding','says','sitting on','standing on','using','walking in','walking on','watching']
+
 # vg-50 categories for stanford VG
 vg_words = [line.strip('\n').strip('\r') for line in open('/home/qifan/datasets/vg/predicate_list.txt')]
 class fineTuningDataset(Dataset):
