@@ -1,6 +1,6 @@
 # CaCao
-This is the official repository for the paper "Visually-Prompted Language Model for Fine-Grained Scene Graph Generation in an Open World"
-![framework](architecture.png)
+This is the official repository for the paper "Visually-Prompted Language Model for Fine-Grained Scene Graph Generation in an Open World" (Accepted by ICCV 2023)
+![framework](figures/architecture.png)
 # Complete code for CaCao and boosted SGG
 Here we provide sample code for CaCao boosting SGG dataset in standard setting and open-world setting.
 # Enhanced fine-grained predicates for VG
