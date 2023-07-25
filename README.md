@@ -37,3 +37,14 @@ Complete code and extra benchmark dataset for the scene graph generation with Ca
 ## Predicate Prediction Distribution
 ![image](https://user-images.githubusercontent.com/48062034/204217723-3c053991-3df8-45c0-b99b-a9830cc2319e.png)
 ![image](https://user-images.githubusercontent.com/48062034/204218044-93bcd22e-96da-4fe7-8fb1-dacd7646d563.png)
+
+## 📜 Citation
+If you find this work useful for your research, please cite our paper and star our git repo:
+```bibtex
+@article{yu2023visually,
+  title={Visually-Prompted Language Model for Fine-Grained Scene Graph Generation in an Open World},
+  author={Yu, Qifan and Li, Juncheng and Wu, Yu and Tang, Siliang and Ji, Wei and Zhuang, Yueting},
+  journal={arXiv preprint arXiv:2303.13233},
+  year={2023}
+}
+```
