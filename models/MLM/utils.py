@@ -17,7 +17,7 @@ vg_words = [line.strip('\n').strip('\r') for line in open('/home/qifan/datasets/
 class fineTuningDataset(Dataset):
     def __init__(self, path, img_root, mode=None):
         self.path = path
-        self.triplets, self.weight, self.predicates_words = self.load_vg_dataset_image_text()
+        self.triplets, self.weight, self.predicates_words = self.load_vg_mapping_dataset_image_text()
         self.img_root = img_root
         # np.random.shuffle(self.triplets)
         if mode == "train": # 80%
