@@ -22,10 +22,10 @@ class fineTuningDataset(Dataset):
         # np.random.shuffle(self.triplets)
         if mode == "train": # 80%
             self.triplets = self.triplets[:int(0.8*len(self.triplets))]
-        elif mode == "val": # 5% = 80%~85%
-            self.triplets = self.triplets[int(0.8*len(self.triplets)):int(0.85 * len(self.triplets))]
-        else: # 15% = 85%~100%
-            self.triplets = self.triplets[int(0.85 * len(self.triplets)):]
+        elif mode == "test": # 10% = 80%~90%
+            self.triplets = self.triplets[int(0.8*len(self.triplets)):int(0.9 * len(self.triplets))]
+        else:               # 10% = 90%~100%
+            self.triplets = self.triplets[int(0.9*len(self.triplets)):]
 
     def load_vg_dataset_image_text(self):
         all_triplets = []
@@ -220,11 +220,9 @@ def layer_init(layer, init_para=0.1, normal=False, xavier=True):
 
 if __name__ == '__main__':
     dataset = fineTuningDataset('datasets/image_caption_triplet.json',"/home/qifan/datasets/coco/train2014/",'train')
-    print(len(dataset.predicates_words))
+    # print(len(dataset.predicates_words))
     finegrained_len = len(dataset.predicates_words)
     for w in vg_words:
         if w not in dataset.predicates_words:
             finegrained_len += 1
-    print(finegrained_len)
-    # print(len(dataset.val_triplets))
-    # print(len(dataset.test_triplets))
+    # print(finegrained_len)

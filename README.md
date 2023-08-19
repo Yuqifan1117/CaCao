@@ -21,7 +21,7 @@ python fine_grained_predicate_boosting.py # enhance the existing SGG dataset wit
   
 	# test for CaCao enhanced models
 	bash test_expand.sh
-## Open-world Predicate SGG Generalization
+## Open-World Predicate SGG Generalization
 	# Backbone w/o Epic 
 	bash train.sh TRANSGLOVE_novel
 	# Epic (+CaCao)
@@ -38,6 +38,8 @@ Complete code and extra benchmark dataset for the scene graph generation with Ca
 ![image](https://user-images.githubusercontent.com/48062034/204217723-3c053991-3df8-45c0-b99b-a9830cc2319e.png)
 ![image](https://user-images.githubusercontent.com/48062034/204218044-93bcd22e-96da-4fe7-8fb1-dacd7646d563.png)
 
+## Acknowledgement
+The SGG part code is implemented based on [Scene-Graph-Benchmark.pytorch](https://github.com/KaihuaTang/Scene-Graph-Benchmark.pytorch), [FGPL](https://github.com/XinyuLyu/FGPL), and [SSRCNN(One-Stage)](https://github.com/MCGNJU/Structured-Sparse-RCNN). Thanks for their great works! 
 ## 📜 Citation
 If you find this work useful for your research, please cite our paper and star our git repo:
 ```bibtex

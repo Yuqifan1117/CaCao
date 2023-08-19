@@ -19,6 +19,11 @@ class BertForPromptFinetuning(BertPreTrainedModel):
         )
         self.predicate_embeddings = predicate_embeddings
         layer_init(self.classifier[1], xavier=True)
+        self.similarity_matrix = np.ones((len(self.predicate_embeddings),len(self.predicate_embeddings)))
+        for i, emb1 in enumerate(self.predicate_embeddings):
+            for j, emb2 in enumerate(self.predicate_embeddings):
+                self.similarity_matrix[i][j] = F.cosine_similarity(emb1, emb2)
+
     def forward(
         self,
         h_cls,
@@ -33,17 +38,16 @@ class BertForPromptFinetuning(BertPreTrainedModel):
             mask_pos = mask_pos.squeeze()
         sequence_mask_output = h_cls[torch.arange(h_cls.size(0)), mask_pos] # only predict the masked position
         sequence_mask_scores = self.cls(sequence_mask_output)
-        # sequence_mask_scores = sequence_mask_output
         logits = self.classifier(sequence_mask_scores)
         loss = None
         # adaptive semantic cluster loss
         if labels is not None:
             cluster_label = F.one_hot(labels.view(-1), num_classes=logits.shape[-1]).float()
             # semantic clustering
-            cluster_dict = json.load(open('utils_data/cluster/CaCao_all_cluster_dict_07.json','r'))
+            cluster_dict = json.load(open('utils_data/cluster/CaCao_map50_dict_07.json','r'))
             for j in range(labels.shape[0]):
                 label_w = self.word_table[labels[j].item()]
-                target_predicate_embedding = self.predicate_embeddings[labels[j].item()].to(device) # target predicate
+                # target_predicate_embedding = self.predicate_embeddings[labels[j].item()].to(device) # target predicate
                 for c in cluster_dict.keys():
                     if label_w in cluster_dict[c]['words']:
                         c_num = len(cluster_dict[c]['words'])
@@ -51,9 +55,8 @@ class BertForPromptFinetuning(BertPreTrainedModel):
                             for w in cluster_dict[c]['words']:
                                 if w != label_w:
                                     k = self.word_table.index(w)
-                                    cluster_predicate_embedding = self.predicate_embeddings[k].to(device)
-                                    s_ij = F.cosine_similarity(target_predicate_embedding, cluster_predicate_embedding)
-                                    cluster_label[j][k] = s_ij*1/c_num 
+                                    s_jk = self.similarity_matrix[labels[j].item()][k]
+                                    cluster_label[j][k] = s_jk*1/c_num 
                         break
             loss = own_ce(logits.view(-1, logits.size(-1)), cluster_label, weight, theta)
         output = (logits,)

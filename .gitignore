@@ -25,6 +25,8 @@ datasets/coco/
 *.swo
 *.swp
 *~
+# Test logs
+*.log
 
 # Pycharm editor settings
 .idea

@@ -36,29 +36,24 @@ def train_epoch(model, train_loader, optimizer, theta, device):
 def train(model, train_loader, val_loader, config, mode=None):
     for name, param in model.named_parameters():
         if mode == 'VPT':
-            param_name = ['transformerlayer']
+            param_name = 'transformerlayer'
         elif mode == 'ASCL':
-            param_name = ['prompt4re']
-        elif mode == 'LPT': 
-            param_name = ['model.bert.embeddings.word_embeddings']
+            param_name = 'prompt4re'
+        else: # LPT
+            param_name = 'model.bert.embeddings.word_embeddings'
+        if param_name in name:
+            print(name)
+            param.requires_grad = True
         else:
-            param_name = ['transformerlayer', 'prompt4re', 'model.bert.embeddings.word_embeddings']
-        for p_name in param_name:
-            if p_name in name:
-                param.requires_grad = True
-                break
-            else:
-                param.requires_grad = False
+            param.requires_grad = False
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=config.lr, weight_decay=config.weight_decay
     )
-    # lr_scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=4230, num_training_steps=42300, last_epoch=-1)
     lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode="max", patience=config.patience, factor=config.factor
+        optimizer, mode="min", patience=config.patience, factor=config.factor
     )
-    # total_epochs = 0
     print('------start training---------')
-    for total_epochs in range(0, 5):
+    for total_epochs in range(5):
         model.train()
         total_mean_loss = train_epoch(model, train_loader, optimizer, config.theta, device=config.device)
         print('total_epochs:{iter} {avg_loss}'.format(iter=total_epochs,avg_loss=total_mean_loss))
@@ -67,15 +62,16 @@ def train(model, train_loader, val_loader, config, mode=None):
             model.eval()
             with torch.no_grad():
                 recall_1, recall_10, val_loss = eval(model, val_loader, config.theta, device=config.device)
-                print('val_Recall@1:{r1} val_Recall@10:{r10}'.format(r1=recall_1,r10=recall_10))
-                # l
-                lr_scheduler.step(recall_1)
+                test_recall_1, test_recall_10, test_loss = eval(model, test_loader, config.theta, device=config.device)
+                print('val_Recall@1:{r1} val_Recall@10:{r10} val_loss:{vl}'.format(r1=recall_1,r10=recall_10,vl=val_loss))
+                print('test_Recall@1:{r1} test_Recall@10:{r10} test_loss:{tl}'.format(r1=test_recall_1,r10=test_recall_10,tl=test_loss))
+                lr_scheduler.step(val_loss)
     
 def eval(model, val_loader, theta, device):
     top_10 = 0
     top_1 = 0
     total = 0
-    cluster_dict = json.load(open('utils_data/cluster/CaCao_all_cluster_dict_07.json','r'))
+    cluster_dict = json.load(open('utils_data/cluster/CaCao_map50_dict_07.json','r'))
     for triplets in tqdm(val_loader):
         batch_text = []
         batch_img = []
@@ -138,7 +134,7 @@ def test(model, test_loader, theta, device):
             batch_img.append(triplets[0][i])   
         output, label = model(batch_text, batch_img, weight, theta, device) 
         predictions = output[1]
-        cluster_dict = json.load(open('utils_data/cluster/CaCao_all_cluster_dict_07.json','r'))
+        cluster_dict = json.load(open('utils_data/cluster/CaCao_map50_dict_07.json','r'))
         word_1 = []
         word_3 = []
         word_5 = []
@@ -159,13 +155,6 @@ def test(model, test_loader, theta, device):
                     for w in cluster_dict[c]['words']:
                         word_10.append(w)
                     break
-        # for k in word_candidates_1:
-        #     word_1.append(words[k])
-        # for k in word_candidates_3:
-        #     word_3.append(words[k])
-        # for k in word_candidates_5:
-        #     word_5.append(words[k])
-
         if words[label.item()] in word_1:
             top_1 += 1
         if words[label.item()] in word_10:
@@ -180,11 +169,12 @@ def main(args):
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=8)
     model_own = VisualBertPromptModel(args.prompt_num, prompt_candidates, words, relation_type_count=relation_type_count)
     # train
-    train(model_own, train_loader, val_loader, args)
-    torch.save(model_own.state_dict(),'checkpoints/cluster_50_model.pkl') 
-    recall_1, recall_5, recall_10, val_loss= eval(model_own, test_loader, device=args.device)
-    print('Recall@1:{r1}   Recall@5:{r5}   Recall@10:{r10}  val_loss:{loss}'.format(r1=recall_1,r5=recall_5,r10=recall_10,loss=val_loss))   
+    # train(model_own, train_loader, val_loader, args)
+    train(model_own, train_loader, val_loader, args, 'VPT')
+    train(model_own, train_loader, val_loader, args, 'LPT') 
+    train(model_own, train_loader, val_loader, args, 'ASCL')
 
+    torch.save(model_own.state_dict(),'checkpoints/cluster_50_model.pkl') 
     test_acc = test(model_own, test_loader, args.theta, args.device)
     print('test recall@1:{}'.format(test_acc))
 if __name__ == '__main__':
@@ -192,12 +182,12 @@ if __name__ == '__main__':
     parser.add_argument(
         "--lr",
         type=float32,
-        default=1.5e-4,
+        default=3e-4,
     )
     parser.add_argument(
         "--weight_decay",
         type=float32,
-        default=7.5e-4,
+        default=0.0004,
     )
     parser.add_argument(
         "--patience",
@@ -215,11 +205,11 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         "--batch_size",
-        default=64
+        default=32
     )
     parser.add_argument(
         "--theta",
-        default=8.0
+        default=9.0
     )
     parser.add_argument(
         "--prompt_num",
@@ -231,16 +221,16 @@ if __name__ == '__main__':
     with open('bert-base-uncased/prompt.txt','r') as f:
         for line in f.readlines():
             prompt_candidates.append(line.strip('\n'))
-
-    train_dataset = fineTuningDataset('datasets/image_caption_triplet.json',"/home/qifan/datasets/coco/train2014/",'train')
-    val_dataset = fineTuningDataset('datasets/image_caption_triplet.json',"/home/qifan/datasets/coco/train2014/",'val')
-    test_dataset = fineTuningDataset('datasets/image_caption_triplet.json',"/home/qifan/datasets/coco/train2014/",'test')
+    # dataset = fineTuningDataset('datasets/image_caption_triplet_all.json',"/home/qifan/datasets/coco/train2014/")
+    train_dataset = fineTuningDataset('datasets/image_caption_triplet_all.json',"/home/qifan/datasets/coco/train2014/",'train')
+    val_dataset = fineTuningDataset('datasets/image_caption_triplet_all.json',"/home/qifan/datasets/coco/train2014/",'val')
+    test_dataset = fineTuningDataset('datasets/image_caption_triplet_all.json',"/home/qifan/datasets/coco/train2014/",'test')
     print('train:{train}, val:{val}, test:{test}'.format(train=len(train_dataset),val=len(val_dataset),test=len(test_dataset)))
     weight = train_dataset.weight
     words = train_dataset.predicates_words
     relation_type_count = len(words)
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=16)
-    val_loader = DataLoader(val_dataset, batch_size=64, shuffle=True, num_workers=16)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=16)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=16)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=1)
     # train
     main(args)
