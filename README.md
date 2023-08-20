@@ -43,10 +43,10 @@ The SGG part code is implemented based on [Scene-Graph-Benchmark.pytorch](https:
 ## 📜 Citation
 If you find this work useful for your research, please cite our paper and star our git repo:
 ```bibtex
-@article{yu2023visually,
+@inproceedings{yu2023visually,
   title={Visually-Prompted Language Model for Fine-Grained Scene Graph Generation in an Open World},
   author={Yu, Qifan and Li, Juncheng and Wu, Yu and Tang, Siliang and Ji, Wei and Zhuang, Yueting},
-  journal={arXiv preprint arXiv:2303.13233},
+  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
   year={2023}
 }
 ```
