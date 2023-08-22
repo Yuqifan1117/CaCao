@@ -26,7 +26,6 @@ python fine_grained_predicate_boosting.py # enhance the existing SGG dataset wit
 	bash train.sh TRANSGLOVE_novel
 	# Epic (+CaCao)
 	bash train.sh PROMPT_novel
-Complete code and extra benchmark dataset for the scene graph generation with CaCao and Epic will be released with a final version of the paper.
 # Quantitative Analysis
 ![image](https://github.com/Yuqifan1117/CaCao/assets/48062034/edd8b9bf-9d00-4f0f-894d-fce3b631fea5)
 # Qualitative Analysis
