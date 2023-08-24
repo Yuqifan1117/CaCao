@@ -14,18 +14,6 @@ python fine_grained_mapping.py # establish the mapping from open-world boosted d
 python cross_modal_tuning.py # obtain cross-modal prompt tuning models for better predicate boosting
 python fine_grained_predicate_boosting.py # enhance the existing SGG dataset with our CaCao model in <pre_trained_visually_prompted_model>
 ```
-## Enhancement Retrain for SGG
-	bash train_motif_expand.sh # expand SGG with motif models
-	bash train_vctree_expand.sh # expand SGG with vctree models
-	bash train_trans_expand.sh # expand SGG with transformer models
-  
-	# test for CaCao enhanced models
-	bash test_expand.sh
-## Open-World Predicate SGG Generalization
-	# Backbone w/o Epic 
-	bash train.sh TRANSGLOVE_novel
-	# Epic (+CaCao)
-	bash train.sh PROMPT_novel
 # Quantitative Analysis
 ![image](https://github.com/Yuqifan1117/CaCao/assets/48062034/edd8b9bf-9d00-4f0f-894d-fce3b631fea5)
 # Qualitative Analysis
