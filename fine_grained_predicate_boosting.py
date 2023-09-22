@@ -26,11 +26,11 @@ from models.MLM.tokenization_bert_fast import BertTokenizerFast
 from models.MLM.mpt_test import VisualBertPromptModel
 
 
-target_words = [line.strip('\n').strip('\r') for line in open('datasets/vg/predicate_list.txt')]
-mapping_dict = json.load(open('utils_data/mapping/openworld_predicate_mapping_dict.json'))
+target_words = [line.strip('\n').strip('\r') for line in open('/home/qifan/datasets/vg/predicate_list.txt')]
+mapping_dict = json.load(open('utils_data/mapping/openworld_predicate_mapping_dict_50.json'))
 fine_words_dataset = fineTuningDataset('datasets/image_caption_triplet_all.json',"datasets/coco/train2014/",'train')
 words = fine_words_dataset.predicates_words
-device = 'cuda:0'
+device = 'cuda'
 """
 A script for generating fine-grained predicates for the VisualGenome dataset
 """
@@ -372,16 +372,14 @@ def expand_relationships(rel_data, obj_data, img_data, split, encoded_label, idx
             prompt_candidates.append(line.strip('\n'))
     prompt_num = 10
     model_own = VisualBertPromptModel(prompt_num, prompt_candidates, words, relation_type_count=len(words))
-    model_own.load_state_dict(torch.load('pre_trained_visually_prompted_model/vg-base-50/vg_model_VPT_LPT_ASCL_threshold07.pkl'))
+    model_own.load_state_dict(torch.load('checkpoints/cluster_50_model.pkl'))
     n = 0 
     max_rel_id = 4836654
     new_predicate_dict = {}
     expand_dataset = dict()
     rst = []
     expand_relation_dict = dict()
-    gt_relation_dict = dict()
     for i, rel_info in tqdm(enumerate(rel_data)):
-        # directly mapping from CaCao for open-world SGG
         if split[i] == 0:
             obj_info = obj_data[i]
             inter_objects = []
@@ -556,6 +554,8 @@ def encode_relationships(rel_data, token_to_idx, obj_data, new_predicate_dict, p
                     filter_predicate_counter[predicate] -= 1
             elif predicate not in token_to_idx:
                 predicate_filtered += 1
+                if predicate in filter_predicate_counter:
+                    filter_predicate_counter[predicate] -= 1
             elif id_to_idx[subj['object_id']] == id_to_idx[obj['object_id']]: # sub and obj can't be the same box
                 duplicate_filtered += 1
                 if predicate in filter_predicate_counter:
@@ -980,9 +980,7 @@ def main(args):
         f.create_dataset('split', data=split) # 2 = test, 0 = train
         f_base.create_dataset('split', data=split)
 
-    # special split for open-vocabulary setting of SGG
-    # split dataset same as before work[benchmark], but filter novel-classes predicates
-    # split dataset to train/valid/test and filter novel predicates in train-set
+    # special split for open-vocabulary setting of SGG and filter novel predicates in train-set
     # split = encode_splits(obj_data, rel_data, base_predicate_tokens, data_split, opt)
     # if split is not None:
     #     f.create_dataset('split', data=split) # 1 = test, 0 = train

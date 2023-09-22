@@ -43,7 +43,6 @@ if __name__ == '__main__':
             prompt_candidates.append(line.strip('\n'))
     prompt_num = 10
     model_own = VisualBertPromptModel(prompt_num, prompt_candidates, raw_predicates, relation_type_count=len(raw_predicates)).to(device)
-    model_own.load_state_dict(torch.load('pre_trained_visually_prompted_model/gqa_fine/gqa_model_VPT_LPT_ASCL_threshold07.pkl', map_location='cuda:0'))
 
     # fine-grained mapping
     mapping_dict = dict()
@@ -67,9 +66,10 @@ if __name__ == '__main__':
     for label in vg_1800_info['predicate_to_idx']:
         vg_1800_predicate_label.append(label)
 
-    prep_words = ['on','in','of','up','to','at']
+    # prep_words = ['on','in','of','up','to','at']
+    prep_words = []
     for raw_word in raw_predicates:
-        mapping_dict[raw_word] = model_own.mapping_target(raw_word, raw_predicates, prep_words, device)
+        mapping_dict[raw_word] = model_own.mapping_target(raw_word, target_words, prep_words, device)
 
-    json.dump(mapping_dict, open('utils_data/mapping/openworld_predicate_mapping_dict.json','w'))
+    json.dump(mapping_dict, open('utils_data/mapping/openworld_predicate_mapping_dict_50.json','w'))
 

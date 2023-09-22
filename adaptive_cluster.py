@@ -235,7 +235,7 @@ class WordsCluster(object):
 
     def evaluate_func(self, keywords):
         all_keyfeatures = self.initial_embedding_info(keywords)
-        ls_k = [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150]
+        # ls_k = [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150]
         ls_k = range(10,562,10)
         # ls_k = range(2,50)
         ls_sil = []
@@ -321,7 +321,7 @@ class WordsCluster(object):
         fig = plt.figure(figsize=(15, 8))
         ax1 = fig.add_subplot(1, 1, 1)
         ax2 = ax1.twinx()
-        X = [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150]
+        # X = [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150]
         X = range(10,562,10)
         ax1.plot(X, mean_elbows.tolist()[0], marker='o', label='Elbow')
         ax2.plot(X, mean_sil.tolist()[0], 'r', marker='*', label='Silhouette Coefficient')
@@ -338,7 +338,7 @@ class WordsCluster(object):
         plt.savefig('centroids_4.png')
   
 if __name__ == '__main__':
-    vg_dataset = fineTuningDataset('datasets/image_caption_triplet.json',"/home/qifan/datasets/coco/train2014/",'train')
+    vg_dataset = fineTuningDataset('datasets/image_caption_triplet_all.json',"/home/qifan/datasets/coco/train2014/",'train')
     # train_dataset = fineTuningDataset('gqa_triplets.json',"/home/qifan/datasets/GQA/images/",'train')
     data_loader = DataLoader(vg_dataset, batch_size=8, shuffle=True)
     predicate_words = vg_dataset.predicates_words
@@ -352,7 +352,10 @@ if __name__ == '__main__':
     ignore_words = []
     kmeans = WordsCluster('/home/qifan/FG-SGG_from_LM/bert-base-uncased', ignore_keywords=ignore_words, prep_words=prep_words)
     # kmeans.monte_carlo(predicate_dict)
-    # using sim_threshold to initilize the number of clusters
-    cluster_dict = kmeans.cluster(predicate_dict, num_clusters=210, sim_threshold=0.9)
-    json.dump(cluster_dict, open('utils_data/cluster/CaCao_all_cluster_dict_09_test.json', 'w'))
+    # using sim_threshold to initilize the number of clusters for total classes
+    # cluster_dict = kmeans.cluster(predicate_dict, num_clusters=230, sim_threshold=0.7)
+    # json.dump(cluster_dict, open('utils_data/cluster/CaCao_all_cluster_dict_07.json', 'w'))
+    # using sim_threshold to initilize the number of clusters for target classes
+    cluster_dict = kmeans.cluster(predicate_dict, num_clusters=39, sim_threshold=0.7)
+    json.dump(cluster_dict, open('utils_data/cluster/CaCao_map50_dict_07.json', 'w'))
 
